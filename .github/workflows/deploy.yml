@@ -9,17 +9,15 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Checkout repository
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # 2. Deploy ke VPS via SSH
       - name: Deploy ke VPS
         uses: appleboy/ssh-action@v0.1.9
         with:
-          host: ${{ secrets.SERVER_IP }}          # IP VPS
-          username: ${{ secrets.SERVER_USER }}    # User SSH
-          key: ${{ secrets.SSH_PRIVATE_KEY }}    # Private SSH Key
+          host: ${{ secrets.SERVER_IP }}        
+          username: ${{ secrets.SERVER_USER }}    
+          key: ${{ secrets.SSH_PRIVATE_KEY }} 
           script: |
             echo "Masuk ke folder aplikasi"
             cd ~/myapp
