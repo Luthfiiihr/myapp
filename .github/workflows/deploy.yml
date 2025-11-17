@@ -1,6 +1,5 @@
 name: CI/CD ke VPS
 
-# Trigger workflow saat ada push ke branch main
 on:
   push:
     branches: [ "main" ]
@@ -14,43 +13,30 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # 2. Deploy ke VPS via SSH
+      # 2. Deploy via SSH
       - name: Deploy ke VPS via SSH
-        uses: appleboy/ssh-action@v0.1.9
-        with:
-          host: ${{ secrets.SERVER_IP }}          # IP VPS
-          username: ${{ secrets.SERVER_USER }}    # User SSH
-          key: ${{ secrets.SSH_PRIVATE_KEY }}    # Private SSH Key
-          script: |
-            echo "Masuk ke folder aplikasi"
-            cd /myapp || mkdir -p /myapp && cd /myapp
-
-            echo "Reset dan update source code dari Git"
-            git reset --hard
-            git clean -fd
-            git pull origin main
-
-            echo "Stop dan hapus container lama (jika ada)"
-            docker stop web || true
-            docker rm web || true
-
-            echo "Build image Docker baru"
-            docker build -t myapp .
-
-            echo "Jalankan container baru"
-            docker run -d \
-              --name web \
-              -p 80:80 \
-              --restart unless-stopped \
-              myapp
-
-      # 3. Optional: cek status container
-      - name: Cek container running
         uses: appleboy/ssh-action@v0.1.9
         with:
           host: ${{ secrets.SERVER_IP }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            echo "Daftar container Docker yang berjalan:"
+            # Pastikan folder aplikasi ada
+            mkdir -p /myapp
+            cd /myapp
+
+            # Update source code
+            git fetch --all
+            git reset --hard origin/main
+            git clean -fd
+
+            # Hentikan container lama (jika ada)
+            docker stop web || true
+            docker rm web || true
+
+            # Build dan jalankan container baru
+            docker build -t myapp .
+            docker run -d --name web -p 80:80 --restart unless-stopped myapp
+
+            # Cek container berjalan
             docker ps -a
