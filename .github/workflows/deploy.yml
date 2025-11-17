@@ -26,9 +26,9 @@ jobs:
       - name: Build
         run: npm run build || echo "no build"
 
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v3
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
         with:
-          name: build-files
-          path: |
-            .
+          name: my-artifact
+          path: path/to/files
+
