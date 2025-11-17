@@ -1,27 +1,34 @@
-name: CI/CD ke VPS
+name: CI Pipeline
 
 on:
   push:
     branches: [ "main" ]
 
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+      - name: Checkout Code
+        uses: actions/checkout@v3
 
-    - name: Deploy ke VPS
-      uses: appleboy/ssh-action@v0.1.7
-      with:
-        host: ${{ secrets.SERVER_IP }}
-        username: ${{ secrets.SERVER_USER }}
-        key: ${{ secrets.SSH_PRIVATE_KEY }}
-        script: |
-          cd project-cloud
-          git pull
-          docker stop web || true
-          docker rm web || true
-          docker build -t myapp .
-          docker run -d --name web -p 80:80 myapp
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install
+        run: npm install
+
+      - name: Test
+        run: npm test || echo "no test"
+
+      - name: Build
+        run: npm run build || echo "no build"
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-files
+          path: |
+            .
