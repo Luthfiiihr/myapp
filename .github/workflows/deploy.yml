@@ -1,5 +1,6 @@
 name: CI/CD ke VPS
 
+# Trigger workflow saat ada push ke branch main
 on:
   push:
     branches: [ "main" ]
@@ -9,20 +10,22 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # 1. Checkout repository
       - name: Checkout code
         uses: actions/checkout@v3
 
+      # 2. Deploy ke VPS via SSH
       - name: Deploy ke VPS via SSH
         uses: appleboy/ssh-action@v0.1.9
         with:
-          host: ${{ secrets.SERVER_IP }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          host: ${{ secrets.SERVER_IP }}          # IP VPS
+          username: ${{ secrets.SERVER_USER }}    # User SSH
+          key: ${{ secrets.SSH_PRIVATE_KEY }}    # Private SSH Key
           script: |
             echo "Masuk ke folder aplikasi"
             cd /myapp || mkdir -p /myapp && cd /myapp
 
-            echo "Update source code dari Git"
+            echo "Reset dan update source code dari Git"
             git reset --hard
             git clean -fd
             git pull origin main
@@ -41,8 +44,7 @@ jobs:
               --restart unless-stopped \
               myapp
 
-          args: -o StrictHostKeyChecking=no
-
+      # 3. Optional: cek status container
       - name: Cek container running
         uses: appleboy/ssh-action@v0.1.9
         with:
@@ -50,4 +52,5 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
+            echo "Daftar container Docker yang berjalan:"
             docker ps -a
