@@ -1,0 +1,27 @@
+name: CI/CD ke VPS
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Deploy ke VPS
+      uses: appleboy/ssh-action@v0.1.7
+      with:
+        host: ${{ secrets.SERVER_IP }}
+        username: ${{ secrets.SERVER_USER }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        script: |
+          cd project-cloud
+          git pull
+          docker stop web || true
+          docker rm web || true
+          docker build -t myapp .
+          docker run -d --name web -p 80:80 myapp
