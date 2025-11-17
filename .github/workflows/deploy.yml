@@ -13,30 +13,31 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # 2. Deploy via SSH
-      - name: Deploy ke VPS via SSH
+      # 2. Deploy ke VPS via SSH
+      - name: Deploy ke VPS
         uses: appleboy/ssh-action@v0.1.9
         with:
-          host: ${{ secrets.SERVER_IP }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          host: ${{ secrets.SERVER_IP }}          # IP VPS
+          username: ${{ secrets.SERVER_USER }}    # User SSH
+          key: ${{ secrets.SSH_PRIVATE_KEY }}    # Private SSH Key
           script: |
-            # Pastikan folder aplikasi ada
-            mkdir -p /myapp
-            cd /myapp
+            echo "Masuk ke folder aplikasi"
+            cd ~/myapp
 
-            # Update source code
+            echo "Update source code"
             git fetch --all
             git reset --hard origin/main
             git clean -fd
 
-            # Hentikan container lama (jika ada)
-            docker stop web || true
-            docker rm web || true
+            echo "Stop container lama (jika ada)"
+            sudo docker stop web || true
+            sudo docker rm web || true
 
-            # Build dan jalankan container baru
-            docker build -t myapp .
-            docker run -d --name web -p 80:80 --restart unless-stopped myapp
+            echo "Build image Docker baru"
+            sudo docker build -t myapp .
 
-            # Cek container berjalan
-            docker ps -a
+            echo "Jalankan container baru"
+            sudo docker run -d --name web -p 80:80 --restart unless-stopped myapp
+
+            echo "Cek container berjalan"
+            sudo docker ps -a
